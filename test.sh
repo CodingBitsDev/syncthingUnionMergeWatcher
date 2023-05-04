@@ -6,6 +6,7 @@ fi
 mkdir ./$folder
 cd $folder
 mkdir .stversions
+mkdir .stfolder
 cd ..
 sleep 2
 syncFile="test.sync-conflict-20230503-000534-BKYYLMD$RANDOM.md"
