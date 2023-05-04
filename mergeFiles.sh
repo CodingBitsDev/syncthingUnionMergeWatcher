@@ -20,8 +20,6 @@ SYNC_STUB='sync-conflict'
 SYNC_STUB='sync-conflict'
 #Check if file is sync-conflict and exists (meanning it was created not removed)
 if [[ "$fileName" == *"$SYNC_STUB"* ]] && [ -f "$1" ]; then
-echo "$fileName | $basePath"
-
   if [[ "$fileEnd" == *"$SYNC_STUB"* ]]; then
     fileEnd=""
     echo "path $path/$fileName | $fileRest $fileEnd" 
@@ -34,7 +32,14 @@ echo "$fileName | $basePath"
   else
     origFile="$fileRest.$fileEnd"
   fi
-  git merge-file "$path/$origFile" "$basePath/.stversions/$addedPath/$origFile" "$path/$fileName" --union
+  commonVersion="$basePath/.stversions/$addedPath/$origFile"
+  if [ -f "$commonVersion" ]; then
+    git merge-file "$path/$origFile" "$commonVersion" "$path/$fileName" --union
+  else
+    touch ./empty
+    git merge-file "$path/$origFile" "./empty" "$path/$fileName" --union
+    rm ./empty
+  fi
   rm "$path/$fileName"
   sleep 0.1
   #echo "$path/$origFile $basePath/.stversions/$addedPath/$origFile $path$/fileName" 
