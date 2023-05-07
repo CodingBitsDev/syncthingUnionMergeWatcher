@@ -10,7 +10,7 @@ while [ ! -d "$basePath/.stfolder" ] && [ ! -z "$basePath" ]; do
   basePath="$(echo $basePath | rev | cut -d"/" -f2-  | rev)"
 done
 
-addedPath=${path//$basePath/}
+addedPath=${path/$basePath}
 
 fileEnd=$(echo $fileName | rev | cut -d"." -f1 | rev)
 fileRest="$(echo $fileName | rev | cut -d"." -f2-  | rev)"
@@ -22,7 +22,6 @@ SYNC_STUB='sync-conflict'
 if [[ "$fileName" == *"$SYNC_STUB"* ]] && [ -f "$1" ]; then
   if [[ "$fileEnd" == *"$SYNC_STUB"* ]]; then
     fileEnd=""
-    echo "path $path/$fileName | $fileRest $fileEnd" 
   else
     fileRest="$(echo $fileRest | rev | cut -d"." -f2-  | rev)"
   fi
@@ -32,7 +31,14 @@ if [[ "$fileName" == *"$SYNC_STUB"* ]] && [ -f "$1" ]; then
   else
     origFile="$fileRest.$fileEnd"
   fi
-  commonVersion="$basePath/.stversions/$addedPath/$origFile"
+
+  #Get History File
+  historyPath=$basePath/.stversions/$addedPath
+  history=$(ls $historyPath |sort -Vr| grep "^$fileRest.*$fileEnd$")
+  read -a history <<< $history
+  commonVersion=${history[0]}
+  #commonVersion="$basePath/.stversions/$addedPath/$origFile"
+
   if [ -f "$commonVersion" ]; then
     git merge-file "$path/$origFile" "$commonVersion" "$path/$fileName" --union
   else
